@@ -49,20 +49,20 @@ gem: --user-install --no-rdoc --no-ri
   after :'uberspace:check', :'uberspace:setup_svscan'
 
 
-  task :setup_secrets do
-    on roles fetch(:uberspace_roles) do
-      secrets = <<-EOF
-#{fetch :passenger_environment}:
-  secret_key_base: #{SecureRandom.hex 40}
-      EOF
-
-      execute :mkdir, "-p #{shared_path}/config"
-      unless test "[ -f #{shared_path}/config/secrets.yml ]"
-        upload! StringIO.new(secrets), "#{shared_path}/config/secrets.yml"
-      end
-    end
-  end
-  after :'uberspace:check', :'uberspace:setup_secrets'
+#  task :setup_secrets do
+#    on roles fetch(:uberspace_roles) do
+#      secrets = <<-EOF
+##{fetch :passenger_environment}:
+#  secret_key_base: #{SecureRandom.hex 40}
+#      EOF
+#
+#     execute :mkdir, "-p #{shared_path}/config"
+#      unless test "[ -f #{shared_path}/config/secrets.yml ]"
+#        upload! StringIO.new(secrets), "#{shared_path}/config/secrets.yml"
+#      end
+#    end
+#  end
+#  after :'uberspace:check', :'uberspace:setup_secrets'
 
   task :setup_daemon do
     on roles fetch(:uberspace_roles) do
@@ -92,30 +92,30 @@ exec multilog t ./main
   end
   after :'deploy:updated', :'uberspace:setup_daemon'
 
-  task :setup_apache_reverse_proxy do
-    on roles fetch(:uberspace_roles) do
-      htaccess = <<-EOF
-RewriteEngine On
-RewriteBase /
-RewriteRule ^(.*)$ http://localhost:#{passenger_port}/$1 [P]
-      EOF
-
-      path = fetch(:domain) ? "/var/www/virtual/#{fetch :user}/#{fetch :domain}" : "/var/www/virtual/#{fetch :user}/html"
-      execute "mkdir -p #{path}"
-      upload! StringIO.new(htaccess), "#{path}/.htaccess"
-      execute "chmod +r #{path}/.htaccess"
-
-      if fetch(:domain)
-        execute "uberspace-add-domain -qwd #{fetch :domain} ; true"
-        if fetch(:add_www_domain)
-          wwwpath = "/var/www/virtual/#{fetch :user}/www.#{fetch :domain}"
-          execute "ln -nfs #{path} #{wwwpath}"
-          execute "uberspace-add-domain -qwd www.#{fetch :domain} ; true"
-        end
-      end
-    end
-  end
-  after :'uberspace:check', :'uberspace:setup_apache_reverse_proxy'
+#  task :setup_apache_reverse_proxy do
+#    on roles fetch(:uberspace_roles) do
+#      htaccess = <<-EOF
+#RewriteEngine On
+#RewriteBase /
+#RewriteRule ^(.*)$ http://localhost:#{passenger_port}/$1 [P]
+#      EOF
+#
+#      path = fetch(:domain) ? "/var/www/virtual/#{fetch :user}/#{fetch :domain}" : "/var/www/virtual/#{fetch :user}/html"
+#      execute "mkdir -p #{path}"
+#      upload! StringIO.new(htaccess), "#{path}/.htaccess"
+#      execute "chmod +r #{path}/.htaccess"
+#
+#      if fetch(:domain)
+#        execute "uberspace-add-domain -qwd #{fetch :domain} ; true"
+#        if fetch(:add_www_domain)
+#          wwwpath = "/var/www/virtual/#{fetch :user}/www.#{fetch :domain}"
+#          execute "ln -nfs #{path} #{wwwpath}"
+#          execute "uberspace-add-domain -qwd www.#{fetch :domain} ; true"
+#        end
+#      end
+#    end
+#  end
+#  after :'uberspace:check', :'uberspace:setup_apache_reverse_proxy'
 
 end
 
